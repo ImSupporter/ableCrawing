@@ -25,9 +25,9 @@ path_top = [
     #'/men-football-jerseys',
     #"/men-jackets",
     #'/men-t_shirts',
-    #'/men-tracksuits',
+    '/men-tracksuits',
     
-    #'/women-jackets',
+    '/women-jackets',
     '/women-hoodies%7Csweatshirts',
     '/women-t_shirts',
     '/women-tracksuits',
