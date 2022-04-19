@@ -209,5 +209,5 @@ cython_debug/
 .ionide
 
 # Support for Project snippet scope
-
+.pyc
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,python
