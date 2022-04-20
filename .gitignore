@@ -211,3 +211,9 @@ cython_debug/
 # Support for Project snippet scope
 .pyc
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,python
+firstCrawling/bin/activate
+firstCrawling/bin/activate.csh
+firstCrawling/bin/activate.fish
+firstCrawling/bin/pip
+firstCrawling/bin/pip3
+firstCrawling/bin/pip3.10
