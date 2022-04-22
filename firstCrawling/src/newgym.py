@@ -1,4 +1,6 @@
 import json
+from lib2to3.pgen2 import driver
+import bs4
 import requests
 import ItemManager
 from time import sleep
@@ -25,18 +27,18 @@ def set_chrome_driver_mobile():
                               options=chrome_options)
     return driver
 
-def send_api(y:float , x:float, page:int = 1, query:str = '헬스장'):
+def send_api(y:float , x:float, page:int = 1, query:str = '헬스'):
     API_URL = 'https://dapi.kakao.com/v2/local/search/keyword'
     headers = {'Authorization':'KakaoAK bbea4260b365b4a526a908b0d42b3b3d'}
     body = {
         'y': y,
         'x' : x,
-        'radius' : '20000',
+        'radius' : '500',
         'page' : page,
-        'size' : 15,
+        'size' : 3,
         'query' : query,
-        'sort' : 'distance',
-        'size' : 1
+        'sort' : 'accuracy',
+        'category_group_code' : 'CT1'
     }
 
     response = requests.get(API_URL, data=body, headers=headers)
@@ -67,50 +69,42 @@ for i in range(len(total_gym)):
     # 영업중인 장소(status code == 1)만 검색 후보에 추가
     if(status_code == 1):
         gym_name = gym['사업장명']
-        road_address = gym['도로명전체주소']
-        address = gym['소재지전체주소']
+        road_address = str(gym['도로명전체주소']).split(',')[0]
+        address = str(gym['소재지전체주소']).split(',')[0]
         lon = gym['lon']
         lat = gym['lat']
         
-        on_gym.append([gym_name,road_address, address, lat, lon])
+        on_gym.append([gym_name, road_address, address, lat, lon])
 
 print('전체 데이터 수 :',len(on_gym))
-kakao_result = send_api(on_gym[11][3],on_gym[11][4],query=on_gym[11][0])
-print(on_gym[11])
-print(kakao_result)
-# for i in range(90,100):
-    
-'''     
-#검색(크롤링 시작)
-for i in range(95,100):
-    print(i,on_gym[i])
+driver = set_chrome_driver_mobile()
+
+
+for idx in range(70,100):
+    if len(on_gym[idx][1]) == 0:
+        search_query = on_gym[idx][2]
+    else:
+        search_query = on_gym[idx][1]
     driver.get('https://m.map.naver.com/#/search')
     sleep(2)
-    #검색어 입력
-    search_box = WebDriverWait(driver, 10).until(
+    searchBox = WebDriverWait(driver, 5).until(
         EC.presence_of_element_located((By.XPATH,'//*[@id="ct"]/div[1]/div[1]/form/div/div[2]/div/span[1]/input'))
     )
-    if type(on_gym[i][1]) is not float: #도로명으로 검색
-        search_box.send_keys(on_gym[i][1].split(',')[0]+" "+on_gym[i][0])
-    else:   #도로명 주소가 없을 때 전체 주소로 검색
-        search_box.send_keys(on_gym[i][2].split(',')[0]+" "+on_gym[i][0])
-    search_box.send_keys(Keys.ENTER)
-    
+    searchBox.send_keys(search_query)
+    searchBox.send_keys(Keys.ENTER)
+    sleep(1)
     try:
-        WebDriverWait(driver, 2).until(
-            EC.presence_of_element_located((By.XPATH,'//*[@id="ct"]/div[2]/ul/li/div[1]/a/div/strong'))
-        )
-        rank1_name = driver.find_element(By.XPATH,'//*[@id="ct"]/div[2]/ul/li[1]').get_attribute('data-title')
-        rank1_road_address  = driver.find_element(By.XPATH, '//*[@id="ct"]/div[2]/ul/li[1]/div[1]/div[1]/div/a').text
-        rank1_road_address = rank1_road_address[5:]
-        rank1_number = driver.find_element(By.XPATH,'//*[@id="ct"]/div[2]/ul/li[1]').get_attribute('data-tel')
-        rank1_thumnail = driver.find_element(By.XPATH,'//*[@id="ct"]/div[2]/ul/li[1]/div[1]/a[1]/img').get_attribute('src')
-        rank1_nid = driver.find_element(By.XPATH,'//*[@id="ct"]/div[2]/ul/li[1]').get_attribute('data-id')
-        rank1_lat = driver.find_element(By.XPATH,'//*[@id="ct"]/div[2]/ul/li[1]').get_attribute('data-latitude')
-        rank1_lon = driver.find_element(By.XPATH,'//*[@id="ct"]/div[2]/ul/li[1]').get_attribute('data-longitude')
-        print(rank1_name,rank1_road_address,rank1_number, rank1_thumnail, rank1_nid, rank1_lat,rank1_lon,sep="\n")
+        print(idx, search_query, on_gym[idx][0])
+        addressBS = BeautifulSoup(driver.page_source, 'html.parser')
+        placeList = addressBS.select('#ct > div.search_listview._content._ctAddress > ul > li')
+        for i in placeList:
+            category = i.select_one('div.item_info > a.a_item.a_item_distance._linkSiteview > div > em').text
+            data_id = i['data-id']
+            place_name = i['data-title']
+            if category in ['헬스장', '스포츠시설', '체력단련,운동']:
+                print(data_id, place_name, category)
     except:
-        print('결과 없음')
-'''
-
+        print("no result")
+    finally:
+        print()
 
