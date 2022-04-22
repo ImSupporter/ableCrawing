@@ -35,7 +35,8 @@ def send_api(y:float , x:float, page:int = 1, query:str = '헬스장'):
         'page' : page,
         'size' : 15,
         'query' : query,
-        'sort' : 'distance'
+        'sort' : 'distance',
+        'size' : 1
     }
 
     response = requests.get(API_URL, data=body, headers=headers)
@@ -52,15 +53,13 @@ proj_1 = Proj(init='epsg:2097')
     # WGS84 경위도: GPS가 사용하는 좌표계 EPSG:4326
 proj_2 = Proj(init='epsg:4326')
 
-    
-driver = set_chrome_driver_mobile()
-
 # csv 파일 불러오기
 total_gym = pd.read_csv(FILE_PATH,low_memory=False)
-
+converted = transform(proj_1, proj_2, total_gym['좌표정보(x)'].values, total_gym['좌표정보(y)'].values)
+total_gym['lon'] = converted[0]
+total_gym['lat'] = converted[1]
 # csv 파일 전체 조회
 on_gym=[]
-print('전체 데이터 수 :',len(total_gym))
 for i in range(len(total_gym)):
     gym = total_gym.loc[i]
     status_code = gym['영업상태구분코드']
@@ -70,8 +69,18 @@ for i in range(len(total_gym)):
         gym_name = gym['사업장명']
         road_address = gym['도로명전체주소']
         address = gym['소재지전체주소']
-        on_gym.append([gym_name,road_address, address])
+        lon = gym['lon']
+        lat = gym['lat']
         
+        on_gym.append([gym_name,road_address, address, lat, lon])
+
+print('전체 데이터 수 :',len(on_gym))
+kakao_result = send_api(on_gym[11][3],on_gym[11][4],query=on_gym[11][0])
+print(on_gym[11])
+print(kakao_result)
+# for i in range(90,100):
+    
+'''     
 #검색(크롤링 시작)
 for i in range(95,100):
     print(i,on_gym[i])
@@ -102,6 +111,6 @@ for i in range(95,100):
         print(rank1_name,rank1_road_address,rank1_number, rank1_thumnail, rank1_nid, rank1_lat,rank1_lon,sep="\n")
     except:
         print('결과 없음')
-    
+'''
 
 
