@@ -22,7 +22,7 @@ class Place:
     road_address:str
     
     
-
+# 용품 관련 함수===============================================================================================================================================================================================
 def insert(brand, item_name, item_code, main_category, sub_category, price, redirect_url):
     db_con = pymysql.connect(host=host_address,port=3306, user='abletest',passwd='xogus',charset='utf8',db='testdb')
     db_cursor = db_con.cursor()
@@ -43,7 +43,8 @@ def search(item_code):
         return Item(res[1],res[2],res[3],res[4],res[5],res[6])
     else:
         return None
-    
+
+# 장소 관련 함수===============================================================================================================================================================================================
 def place_insert(place_id, category, place_name, road_address,place_tel, latitude, longitude, thumnail):
     db_con = pymysql.connect(host=host_address,port=3306, user='abletest',passwd='xogus',charset='utf8',db='testdb')
     db_cursor = db_con.cursor()
